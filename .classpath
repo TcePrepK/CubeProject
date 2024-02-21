@@ -6,5 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="D:/Eclipse/eclipse-workspace/LabProject1/lib/Enigma-Edited2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

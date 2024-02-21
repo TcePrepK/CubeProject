@@ -10,20 +10,49 @@ public class Piece {
 	// TODO: Grosses way to do this, maybe rework ? For now, it works (I think)!
 	private boolean[][][] possiblePiecesBySize = new boolean[][][] {
 		{ 
-			{ true } // 1-Cube 1
+			{ 
+				true 
+			} // 1-Cube 1
 		},
 		{ 
-			{ false, false, true, true } // 2-Cube 1
+			{ 
+				false, false, 
+				true, true 
+			} // 2-Cube 1
 		},			
 		{ 
-			{ false, true, false, false, true, true, false, false, false }, // 3-Cube 1
-			{ false, false, false, false, false, false, true, true, true } // 3-Cube 1
+			{ 
+				false, true, false, 
+				false, true, true, 
+				false, false, false 
+			}, // 3-Cube 1
+			{ 
+				false, false, false, 
+				false, false, false, 
+				true, true, true 
+			} // 3-Cube 1
 		},			
 		{ 
-			{ false, false, false, true, false, false, true, true, true }, // 4-Cube 1
-			{ false, false, false, false, true, false, true, true, true }, // 4-Cube 2
-			{ false, true, true, true, true, false, false, false, false }, // 4-Cube 3
-			{ true, true, false, true, true, false, false, false, false } // 4-Cube 4
+			{ 
+				false, false, false, 
+				true, false, false, 
+				true, true, true 
+			}, // 4-Cube 1
+			{ 
+				false, false, false, 
+				false, true, false, 
+				true, true, true 
+			}, // 4-Cube 2
+			{ 
+				false, true, true, 
+				true, true, false, 
+				false, false, false 
+			}, // 4-Cube 3
+			{ 
+				true, true, false, 
+				true, true, false, 
+				false, false, false 
+			} // 4-Cube 4
 		},
 	};
 	
@@ -55,8 +84,7 @@ public class Piece {
 		this.cubes = new Cube[selectedPiece.length];
 		for (int i = 0; i < this.cubes.length; i++) {
 			if (!selectedPiece[i]) continue;
-			this.cubes[i] = new Cube();
-			this.cubes[i].generateValues(rng, additionalForce);
+			this.cubes[i] = new Cube(rng, additionalForce);
 		}
 	}
 }

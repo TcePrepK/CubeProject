@@ -3,16 +3,27 @@ package Project.Core;
 import java.util.Random;
 
 public class Cube {
-	public int[] valueX = new int[2]; // [0, 0]-[9, 9]
-	public int[] valueY = new int[2]; // [0, 0]-[9, 9]
+	public int valueX = 0; // [0, 0]-[9, 9]
+	public int valueY = 0; // [0, 0]-[9, 9]
 	
-	public void generateValues(Random rng, int additionalForce) {
-		final int fullX = rng.nextInt(76) + additionalForce;
-		final int fullY = rng.nextInt(76) + additionalForce;
-
-		valueX[0] = fullX / 10;
-		valueX[1] = fullX % 10;
-		valueY[0] = fullY / 10;
-		valueY[1] = fullY % 10;
+	public Cube(Random rng, int min, int max) {
+		this.initialize(rng, min, max);
+	}
+	
+	public Cube(Random rng, int additionalForce) {
+		this.initialize(rng, additionalForce, 75 + additionalForce);
+	}
+	
+	private void initialize(Random rng, int min, int max) {
+		valueX = rng.nextInt(max - min + 1) + min;
+		valueY = rng.nextInt(max - min + 1) + min;
+	}
+	
+	public int yForce() {
+		return valueY;
+	}
+	
+	public int xForce() {
+		return valueX;
 	}
 }
