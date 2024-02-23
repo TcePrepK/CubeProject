@@ -22,9 +22,7 @@ public class FinalRobot {
 		this.constructRobot(bodyParts);
 	}
 	
-	/**
-	 * Calculates the robot's statistics when body parts are given.
-	 */
+	// Calculates the robot's statistics when body parts are given.
 	private void constructRobot(Cube[] bodyParts) {
 		// Intelligence = Sum of first 4 (body).
 		for (int i = 0; i < 4; i++) {

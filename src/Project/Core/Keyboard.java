@@ -28,7 +28,7 @@ public class Keyboard {
 			
 			@Override
 			public void keyReleased(KeyEvent e) {}
-		});		
+		});
 	}
 	
 	/**

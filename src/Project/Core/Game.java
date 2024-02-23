@@ -18,9 +18,9 @@ public class Game {
     }
     
     public void run() throws InterruptedException {
+    	console.print(2, 0, "Press SPACE to generate new sets");
+    	
     	boolean isRunning = true;
-    	int testX = 0;
-    	int testY = 0;
     	while(isRunning) {
     		if (mouse.isLeftDown()) {
     			console.print(mouse.x, mouse.y, '#');
@@ -35,24 +35,31 @@ public class Game {
     				break;
     			}
     			
-    			System.out.println(key);
-    			// Arrow Keys
-    			switch (key) {
-    				case "LEFT":
-	    				testX -= 1;
-	    				break;
-	    			case "RIGHT":
-	    				testX += 1;
-	    				break;
-	    			case "UP":
-	    				testY -= 1;
-	    				break;
-	    			case "DOWN":
-	    				testY += 1;
-	    				break;
+    			if (key.equals("SPACE")) {
+    				int offX = 1;
+    				int offY = 3;
+    				// Test Place 
+    				Piece testPiece = new Piece(new Random(), 3);
+    				testPiece.render(console, offX, offY);
+    				testPiece.rotateCW();
+    				testPiece.render(console, 15 + offX, offY);
+    				testPiece.rotateCW();
+    				testPiece.render(console, offX, 15 + offY);
+    				testPiece.rotateCW();
+    				testPiece.render(console, 15 + offX, 15 + offY);
+    				testPiece.rotateCW();
+    				testPiece.mirror();
+    				testPiece.render(console, 30 + offX, offY);
+    				testPiece.rotateCW();
+    				testPiece.render(console, 30 + offX, 15 + offY);
+    				
+    				console.print(offX + 1, offY - 1, "Original Form");
+    				console.print(30 + offX + 1, offY - 1, "Rotated Once");
+    				console.print(offX + 1, 15 + offY - 1, "Rotated Twice");
+    				console.print(30 + offX + 1, 15 + offY - 1, "Rotated Thrice");
+    				console.print(60 + offX + 1, offY - 1, "Original Mirrored");
+    				console.print(60 + offX + 1, 15 + offY - 1, "Original Mirrored, Rotated");
     			}
-    			
-    			console.print(testX, testY, '#');
     		}
     		Thread.sleep(1);
  	    }
