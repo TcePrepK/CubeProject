@@ -1,36 +1,58 @@
 package Project.Core;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
-
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import javax.swing.JFrame;
 import enigma.console.Console;
-import enigma.console.TextWindow;
+import enigma.console.java2d.Java2DTextWindow;
 import enigma.core.Enigma;
 
 // This console class is just to manage print functions easier and remove the code spaghetti.
 public class GameConsole {
-	private int WIDTH = 60 * 2;
-	private int HEIGHT = 40;
+	private int MAX_CHARS_X, MAX_CHARS_Y;
+	private int FONT_SIZE = 12;
 	public Console generalConsole;
 	
 	public GameConsole(String name) {
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		generalConsole = Enigma.getConsole(name, WIDTH, HEIGHT, 16);
+        generalConsole = Enigma.getConsole(name, 60, 40, FONT_SIZE);
+		
+		// Don't look here... Just a few lines of codes to full-screen the window. I had to do this because Enigma sucks.
+        Java2DTextWindow textWindow = getTextWindow();
+        JFrame frame = (JFrame) textWindow.getParent().getParent().getParent().getParent().getParent().getParent();
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        
+        // This part makes the window full-screen and sets the max char variables.
+        textWindow.setVisible(false);
+        frame.setVisible(false);
+        
+        gd.setFullScreenWindow(frame);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        
+        // TODO: Check! Setting a new font breaks it for some reason :?
+        
+//        Font newFont = new Font("Noto Sans", Font.PLAIN, FONT_SIZE);
+//        textWindow.setFont(newFont);
+        
+        MAX_CHARS_X = textWindow.getColumns();
+		MAX_CHARS_Y = textWindow.getRows();
+		
+		frame.setVisible(true);
+		textWindow.setVisible(true);
 	}
 	
 	public void print(int x, int y, char c) {
-		if (x < 0 || x * 2 >= WIDTH || y < 0 || y >= HEIGHT) return;
+		if (x < 0 || x * 2 >= MAX_CHARS_X || y < 0 || y >= MAX_CHARS_Y) return;
 		getTextWindow().output(x * 2, y, c);
 	}
 	
 	public void print(int x, int y, String s) {
-		if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
+		if (x < 0 || x + s.length() >= MAX_CHARS_X || y < 0 || y >= MAX_CHARS_Y) return;
 		getTextWindow().setCursorPosition(x, y);
 		getTextWindow().output(s);
 	}
 	
-	public TextWindow getTextWindow() {
-		return generalConsole.getTextWindow();
+	public Java2DTextWindow getTextWindow() {
+		return (Java2DTextWindow) generalConsole.getTextWindow();
 	}
 	
 	public void close() {

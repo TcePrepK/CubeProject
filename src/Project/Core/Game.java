@@ -18,12 +18,30 @@ public class Game {
     }
     
     public void run() throws InterruptedException {
-    	console.print(2, 0, "Press SPACE to generate new sets");
+    	PieceDepot depot = new PieceDepot(mainRNG);
+    	depot.render(console, 50, 1);
     	
+    	ConstructionRobot robot = new ConstructionRobot();
+    	Piece randomPiece = new Piece(mainRNG, 3);
+    	robot.putPiece(1, 0, randomPiece);
+    	
+    	robot.render(console);
+
+    	int the_last_one_selected = 0;
     	boolean isRunning = true;
     	while(isRunning) {
     		if (mouse.isLeftDown()) {
-    			console.print(mouse.x, mouse.y, '#');
+    			for(int i = 0; i < depot.pieceDepot.length; i++) {
+        			if(depot.pieceDepot[i].isSelected(mouse, console)) {
+        				depot.pieceDepot[i].selected = true;
+        				if(the_last_one_selected != i) {
+        					depot.pieceDepot[the_last_one_selected].clean(console);
+        					depot.pieceDepot[the_last_one_selected].selected = false;
+            				the_last_one_selected=i;
+        				}
+        				break;
+        			}
+        		}
     		}
     		
     		if (keyboard.isKeyPressed()) {
@@ -35,32 +53,11 @@ public class Game {
     				break;
     			}
     			
-    			if (key.equals("SPACE")) {
-    				int offX = 1;
-    				int offY = 3;
-    				// Test Place 
-    				Piece testPiece = new Piece(new Random(), 3);
-    				testPiece.render(console, offX, offY);
-    				testPiece.rotateCW();
-    				testPiece.render(console, 15 + offX, offY);
-    				testPiece.rotateCW();
-    				testPiece.render(console, offX, 15 + offY);
-    				testPiece.rotateCW();
-    				testPiece.render(console, 15 + offX, 15 + offY);
-    				testPiece.rotateCW();
-    				testPiece.mirror();
-    				testPiece.render(console, 30 + offX, offY);
-    				testPiece.rotateCW();
-    				testPiece.render(console, 30 + offX, 15 + offY);
-    				
-    				console.print(offX + 1, offY - 1, "Original Form");
-    				console.print(30 + offX + 1, offY - 1, "Rotated Once");
-    				console.print(offX + 1, 15 + offY - 1, "Rotated Twice");
-    				console.print(30 + offX + 1, 15 + offY - 1, "Rotated Thrice");
-    				console.print(60 + offX + 1, offY - 1, "Original Mirrored");
-    				console.print(60 + offX + 1, 15 + offY - 1, "Original Mirrored, Rotated");
-    			}
+        		depot.pieceDepot[the_last_one_selected].Moves(key, console);
     		}
+    		
+//    		robot.render(console);
+    		
     		Thread.sleep(1);
  	    }
     	
