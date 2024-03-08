@@ -25,8 +25,8 @@ public class GameConsole {
         textWindow.setVisible(false);
         frame.setVisible(false);
         
-        gd.setFullScreenWindow(frame);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        gd.setFullScreenWindow(frame);
         
         // TODO: Check! Setting a new font breaks it for some reason :?
         

@@ -4,11 +4,9 @@ import java.util.Random;
 
 public class PieceDepot {
 	public Piece[] pieceDepot = new Piece[20];
-	private final Random rng;
+	private int selectedPiece = 0;
 
 	public PieceDepot(Random rng) {
-		this.rng = rng;
-
 		for (int i = 0; i < pieceDepot.length; i++) {
 			if (i > 12) {
 				pieceDepot[i] = new Piece(rng, 1);
@@ -22,9 +20,27 @@ public class PieceDepot {
 		}
 
 	}
+	
+	public void mouseCheck(Mouse mouse, GameConsole console) {
+		for(int i = 0; i < pieceDepot.length; i++) {
+			if(!pieceDepot[i].isSelected(mouse, console)) continue;
+			
+			pieceDepot[i].selected = true;
+			if(selectedPiece != i) {
+				pieceDepot[selectedPiece].clean(console);
+				pieceDepot[selectedPiece].selected = false;
+				selectedPiece = i;
+			}
+			break;
+		}
+	}
+	
+	public void keyboardCheck(String key, GameConsole console) {
+		pieceDepot[selectedPiece].Moves(key, console);
+	}
 
 	public void render(GameConsole console, int x, int y) {
-		String lines = "-".repeat(50);
+		String lines = "-".repeat(47);
 		console.print(x * 2 + 4, y, lines + "   P I E C E S  " + lines);
 
 		int a = 0;

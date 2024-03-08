@@ -21,6 +21,7 @@ public class ConstructionRobot {
 	}
 	
 	private Stack placedPieces = new Stack(14);
+	private int[] selectedGrid = { -1, -1 };
 	
 	private boolean isPlaceable(int x, int y, Piece piece) {
 		int size = piece.getSize();
@@ -48,9 +49,23 @@ public class ConstructionRobot {
 		}
 	}
 	
+	public void mouseCheck(Mouse mouse, GameConsole console) {
+		int x = mouse.x - 4;
+		int y = mouse.y - 4;
+		
+		if (x < 0 || y < 0 || x > 20 || y > 20) return;
+		int gridX = x / 4;
+		int gridY = y / 4;
+		
+//		console.print(selectedGrid[0] * 4 + 4, selectedGrid[1] * 4 + 4, '•');		
+		selectedGrid[0] = gridX;
+		selectedGrid[1] = gridY;
+//		console.print(gridX * 4 + 4, gridY * 4 + 4, '#');		
+	}
+	
 	public void render(GameConsole console) {
-		int paddingX = 1;
-		int paddingY = 1;
+		int paddingX = 2;
+		int paddingY = 2;
 		
 		console.print(paddingX * 2, paddingY, "+ " + "-".repeat(46) + ">  X");
 		for (int i = 1; i < 25; i++) {
@@ -88,7 +103,6 @@ public class ConstructionRobot {
 			}
 		}
 		
-		System.out.println(placedPieces.size());
 		for (int d = 0; d < placedPieces.size(); d++) {
 			PieceByPosition data = (PieceByPosition) placedPieces.get(d);
 			data.piece.renderRaw(console, paddingX + data.x * 4, paddingY + data.y * 4);

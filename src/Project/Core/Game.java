@@ -22,26 +22,16 @@ public class Game {
     	depot.render(console, 50, 1);
     	
     	ConstructionRobot robot = new ConstructionRobot();
-    	Piece randomPiece = new Piece(mainRNG, 3);
-    	robot.putPiece(1, 0, randomPiece);
+//    	Piece randomPiece = new Piece(mainRNG, 3);
+//    	robot.putPiece(1, 0, randomPiece);
     	
     	robot.render(console);
 
-    	int the_last_one_selected = 0;
     	boolean isRunning = true;
     	while(isRunning) {
     		if (mouse.isLeftDown()) {
-    			for(int i = 0; i < depot.pieceDepot.length; i++) {
-        			if(depot.pieceDepot[i].isSelected(mouse, console)) {
-        				depot.pieceDepot[i].selected = true;
-        				if(the_last_one_selected != i) {
-        					depot.pieceDepot[the_last_one_selected].clean(console);
-        					depot.pieceDepot[the_last_one_selected].selected = false;
-            				the_last_one_selected=i;
-        				}
-        				break;
-        			}
-        		}
+    			depot.mouseCheck(mouse, console);
+    			robot.mouseCheck(mouse, console);
     		}
     		
     		if (keyboard.isKeyPressed()) {
@@ -53,7 +43,7 @@ public class Game {
     				break;
     			}
     			
-        		depot.pieceDepot[the_last_one_selected].Moves(key, console);
+    			depot.keyboardCheck(key, console);
     		}
     		
 //    		robot.render(console);

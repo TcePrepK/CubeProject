@@ -90,6 +90,28 @@ public class Piece {
 		}
 		
 		renderRaw(console, x, y);
+		
+//		int width = size;
+//		int[] rows = calculateCubeForcesX();
+//		int[] cols = calculateCubeFrocesY();
+//		
+//		int lastX = x + (width - 1) * 4 + 4;
+//		int lastY = y + (width - 1) * 4 + 4;
+//		
+//		if(width>0) {
+//			console.print(lastX * 2, lastY, String.valueOf(rows[0]));
+//			console.print((x+8) * 2,y+((width)*4)+1,String.valueOf(cols[0]));
+//		}
+//		if(width>1) {
+//			
+//			console.print((x+((width+1)*8)) * 2,y+6,String.valueOf(rows[1]));
+//			console.print((x+17) * 2,y+((width)*4)+1,String.valueOf(cols[1]));
+//			
+//		}
+//		if(width>2) {
+//			console.print((x+((width+1)*8)) * 2,y+10,String.valueOf(rows[2]));
+//			console.print((x+25) * 2,y+((width)*4)+1,String.valueOf(cols[2]));
+//		}
 	}
 	
 	public void renderRaw(GameConsole console, int x, int y) {
@@ -318,6 +340,56 @@ public class Piece {
 				cubes[j][i] = new Cube(rng, additionalForce);
 			}
 		}
+	}
+	
+	private int[] calculateCubeForcesX() {
+			
+		
+		int count=0;
+		
+		int[] rows = new int[3];
+	
+		int width = getSize();
+		for(int i=0;i<width;i++) {
+			count=0;
+			rows[i]=00;
+			for(int j=0;j<width;j++) {
+				if(cubes[i ][ j ] != null) {
+					count++;
+					rows[i]+=cubes[i][j].xForce();
+				}
+			}
+			
+			if (count != 0) {
+				rows[i] = (int) Math.round((double) rows[i] / count);
+			}
+			
+		}
+		
+		return rows;
+	}
+	
+	private int[] calculateCubeFrocesY() {
+		
+		int count=0;
+		
+		int[] cols = new int[3];
+	
+		int width = getSize();
+		for(int i=0;i<width;i++) {					
+			for(int j=0;j<width;j++) {
+				if(cubes[j ][ i] != null) {
+					count++;
+					cols[i]+=cubes[j][i].yForce();
+				}
+			}
+			
+			if (count != 0) {
+				cols[i] = (int) Math.round((double) cols[i] / count);
+			}
+		}
+		
+		return cols;
 	}
 	
 	public int getSize() {
