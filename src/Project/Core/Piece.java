@@ -63,12 +63,16 @@ public class Piece {
 		{'•', '•', '•', '•', '•'},
 	};
 	
-	private int[] loc = { 0, 0 };
-	public boolean selected = false;
+	private int[] position = { 0, 0 };
 	
 	public Piece(Random rng, int cubeAmount) {
 		this.cubeAmount = cubeAmount;
 		createRandomBlocks(rng);
+	}
+	
+	public Piece(Cube[][] cubes, int cubeAmount) {
+		this.cubeAmount = cubeAmount;
+		this.cubes = cubes;
 	}
 	
 	public void render(GameConsole console, int x, int y) {
@@ -91,27 +95,14 @@ public class Piece {
 		
 		renderRaw(console, x, y);
 		
-//		int width = size;
-//		int[] rows = calculateCubeForcesX();
-//		int[] cols = calculateCubeFrocesY();
-//		
-//		int lastX = x + (width - 1) * 4 + 4;
-//		int lastY = y + (width - 1) * 4 + 4;
-//		
-//		if(width>0) {
-//			console.print(lastX * 2, lastY, String.valueOf(rows[0]));
-//			console.print((x+8) * 2,y+((width)*4)+1,String.valueOf(cols[0]));
-//		}
-//		if(width>1) {
-//			
-//			console.print((x+((width+1)*8)) * 2,y+6,String.valueOf(rows[1]));
-//			console.print((x+17) * 2,y+((width)*4)+1,String.valueOf(cols[1]));
-//			
-//		}
-//		if(width>2) {
-//			console.print((x+((width+1)*8)) * 2,y+10,String.valueOf(rows[2]));
-//			console.print((x+25) * 2,y+((width)*4)+1,String.valueOf(cols[2]));
-//		}
+		int[] rows = calculateCubeForcesX();
+		int[] cols = calculateCubeFrocesY();
+		int right = x + size * 4 + 1;
+		int bottom = y + size * 4 + 1;
+		for (int i = 0; i < size; i++) {
+			console.print(right * 2, y + i * 4 + 2, (rows[i] < 10 ? "0" : "") + rows[i]);
+			console.print((x + i * 4 + 2) * 2, bottom, (cols[i] < 10 ? "0" : "") + cols[i]);
+		}
 	}
 	
 	public void renderRaw(GameConsole console, int x, int y) {
@@ -197,70 +188,42 @@ public class Piece {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////// Select
 
-	public void Moves(String keyboard,GameConsole console) {
+	public boolean MovesCheck(String keyboard,GameConsole console) {
 		if(keyboard.equals("3")) {
 			rotateCCW();
-			render(console,loc[0],loc[1]);
-		}
-		if(keyboard.equals("4")) {
+			render(console, position[0], position[1]);
+			return true;
+		} else if(keyboard.equals("4")) {
 			rotateCW();
-			render(console,loc[0],loc[1]);
-		}
-		if(keyboard.equals("5")) {
+			render(console, position[0], position[1]);
+			return true;
+		} else if(keyboard.equals("5")) {
 			mirror();
-			render(console,loc[0],loc[1]);
+			render(console, position[0], position[1]);
+			return true;
 		}
+		return false;
 	}
 	
 	public void clean(GameConsole console) {
-		console.print(loc[0]-1, loc[1]-1, ' ');
+		console.print((position[0] - 2) * 2, position[1] - 1, "   ");
+		console.print((position[0] - 2) * 2, position[1], " ");
+		console.print((position[0] - 2) * 2, position[1] + 1, "   ");
+	}
+	
+	public void showSelect(GameConsole console) {
+		console.print((position[0] - 2) * 2, position[1] - 1, "###");
+		console.print((position[0] - 2) * 2, position[1], "#");
+		console.print((position[0] - 2) * 2, position[1] + 1, "###");
 	}
 	
 	public boolean isSelected(Mouse mouse,GameConsole console) {
-		if (mouse.isLeftDown()) {
-			String a=String.valueOf(mouse.x);
-			String b=String.valueOf(mouse.y);
-			if(this.cubeAmount==3||this.cubeAmount==4) {
-			if(mouse.x>=loc[0] &&mouse.x<=loc[0]+12&&mouse.y>=loc[1]&&mouse.y<=loc[1]+12) {
-				
-				console.print(loc[0]-1, loc[1]-1, '#');
-				return true;
-			}
-			else {
-				
-				return false;
-			}
-			}
-			else if(this.cubeAmount==2) {
-				if(mouse.x>=loc[0] &&mouse.x<=loc[0]+8&&mouse.y>=loc[1]&&mouse.y<=loc[1]+8) {
-					
-					console.print(loc[0]-1, loc[1]-1, '#');
-					return true;
-				}
-				else {
-					
-					return false;
-				}
-			}
-			else if(this.cubeAmount==1) {
-				if(mouse.x>=loc[0] &&mouse.x<=loc[0]+4&&mouse.y>=loc[1]&&mouse.y<=loc[1]+4) {
-					
-					console.print(loc[0]-1, loc[1]-1, '#');
-					return true;
-				}
-				else {
-					
-					return false;
-				}
-			}
-			else {
-				return false;
-			}
-		}
-		else {
-			
+		if (!mouse.isLeftDown()) {
 			return false;
-			}
+		}
+		
+		int size = getSize();
+		return (mouse.x >= position[0] && mouse.x <= position[0] + size * 4 && mouse.y >= position[1] && mouse.y <= position[1] + size * 4);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////// Misc functions
@@ -343,52 +306,50 @@ public class Piece {
 	}
 	
 	private int[] calculateCubeForcesX() {
-			
-		
-		int count=0;
-		
+		int count = 0;
+
 		int[] rows = new int[3];
-	
+
 		int width = getSize();
-		for(int i=0;i<width;i++) {
-			count=0;
-			rows[i]=00;
-			for(int j=0;j<width;j++) {
-				if(cubes[i ][ j ] != null) {
+		for (int i = 0; i < width; i++) {
+			count = 0;
+			rows[i] = 0;
+			for (int j = 0; j < width; j++) {
+				if (cubes[i][j] != null) {
 					count++;
-					rows[i]+=cubes[i][j].xForce();
+					rows[i] += cubes[i][j].xForce();
 				}
 			}
-			
+
 			if (count != 0) {
 				rows[i] = (int) Math.round((double) rows[i] / count);
 			}
-			
+
 		}
-		
+
 		return rows;
 	}
-	
+
 	private int[] calculateCubeFrocesY() {
-		
-		int count=0;
-		
+		int count = 0;
+
 		int[] cols = new int[3];
-	
+
 		int width = getSize();
-		for(int i=0;i<width;i++) {					
-			for(int j=0;j<width;j++) {
-				if(cubes[j ][ i] != null) {
+		for (int i = 0; i < width; i++) {
+			count = 0;
+			for (int j = 0; j < width; j++) {
+				if (cubes[j][i] != null) {
 					count++;
-					cols[i]+=cubes[j][i].yForce();
+					cols[i] += cubes[j][i].yForce();
 				}
 			}
-			
+
 			if (count != 0) {
 				cols[i] = (int) Math.round((double) cols[i] / count);
 			}
 		}
-		
+
 		return cols;
 	}
 	
@@ -397,7 +358,19 @@ public class Piece {
 	}
 	
 	public void setPosition(int x, int y) {
-		loc[0] = x;
-		loc[1] = y;
+		position[0] = x;
+		position[1] = y;
+	}
+	
+	public Piece clone() {
+		int size = getSize();
+		Cube[][] newCubes = new Cube[size][size];
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++) {
+				if (cubes[j][i] == null) continue;
+				newCubes[j][i] = cubes[j][i].clone();
+			}
+		}
+		return new Piece(newCubes, cubeAmount);
 	}
 }

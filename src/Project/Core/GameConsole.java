@@ -1,7 +1,10 @@
 package Project.Core;
 
+import java.awt.Color;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import enigma.console.Console;
 import enigma.console.java2d.Java2DTextWindow;
@@ -14,19 +17,19 @@ public class GameConsole {
 	public Console generalConsole;
 	
 	public GameConsole(String name) {
-        generalConsole = Enigma.getConsole(name, 60, 40, FONT_SIZE);
+        generalConsole = Enigma.getConsole(name, 240, 60, FONT_SIZE);
 		
 		// Don't look here... Just a few lines of codes to full-screen the window. I had to do this because Enigma sucks.
         Java2DTextWindow textWindow = getTextWindow();
-        JFrame frame = (JFrame) textWindow.getParent().getParent().getParent().getParent().getParent().getParent();
+        JFrame frame = (JFrame) textWindow.getRootPane().getParent();
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         
         // This part makes the window full-screen and sets the max char variables.
-        textWindow.setVisible(false);
-        frame.setVisible(false);
+//        textWindow.setVisible(false);
+//        frame.setVisible(false);
         
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        gd.setFullScreenWindow(frame);
+//        gd.setFullScreenWindow(frame);
+//        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         
         // TODO: Check! Setting a new font breaks it for some reason :?
         
@@ -36,8 +39,8 @@ public class GameConsole {
         MAX_CHARS_X = textWindow.getColumns();
 		MAX_CHARS_Y = textWindow.getRows();
 		
-		frame.setVisible(true);
-		textWindow.setVisible(true);
+//		frame.setVisible(true);
+//		textWindow.setVisible(true);
 	}
 	
 	public void print(int x, int y, char c) {

@@ -22,16 +22,27 @@ public class Cube {
 		initialize(rng, additionalForce, 75 + additionalForce);
 	}
 	
+	public Cube(int valueX, int valueY) {
+		this.valueX = valueX;
+		this.valueY = valueY;
+		
+		// Depending on the values set the "printValues" correctly.
+		printValues[1][2] = (char) ('０' + (valueY / 10));
+		printValues[2][1] = (char) ('０' + (valueX / 10));
+		printValues[3][2] = (char) ('０' + (valueY % 10));
+		printValues[2][3] = (char) ('０' + (valueX % 10));
+	}
+	
 	private void initialize(Random rng, int min, int max) {
 		// Sets values randomly depending on minimum and maximum values.
 		valueX = rng.nextInt(min, max + 1);
 		valueY = rng.nextInt(min, max + 1);
 
 		// Depending on the values set the "printValues" correctly.
-		printValues[1][2] = (char) ('0' + (valueY / 10));
-		printValues[2][1] = (char) ('0' + (valueX / 10));
-		printValues[3][2] = (char) ('0' + (valueY % 10));
-		printValues[2][3] = (char) ('0' + (valueX % 10));
+		printValues[1][2] = (char) ('０' + (valueY / 10));
+		printValues[2][1] = (char) ('０' + (valueX / 10));
+		printValues[3][2] = (char) ('０' + (valueY % 10));
+		printValues[2][3] = (char) ('０' + (valueX % 10));
 	}
 	
 	// Rotates the cube meaning just changes the X and Y values.
@@ -41,10 +52,10 @@ public class Cube {
 		valueY = temp;
 	
 		// Fix the values again.
-		printValues[1][2] = (char) ('0' + (valueY / 10));
-		printValues[2][1] = (char) ('0' + (valueX / 10));
-		printValues[3][2] = (char) ('0' + (valueY % 10));
-		printValues[2][3] = (char) ('0' + (valueX % 10));
+		printValues[1][2] = (char) ('０' + (valueY / 10));
+		printValues[2][1] = (char) ('０' + (valueX / 10));
+		printValues[3][2] = (char) ('０' + (valueY % 10));
+		printValues[2][3] = (char) ('０' + (valueX % 10));
 	}
 	
 	// To render all we do is printing the "printValues"
@@ -63,5 +74,9 @@ public class Cube {
 	
 	public int xForce() {
 		return valueX;
+	}
+	
+	public Cube clone() {
+		return new Cube(valueX, valueY);
 	}
 }

@@ -18,25 +18,79 @@ public class PieceDepot {
 				pieceDepot[i] = new Piece(rng, 4);
 			}
 		}
-
 	}
 	
-	public void mouseCheck(Mouse mouse, GameConsole console) {
+	public boolean mouseCheck(Mouse mouse, GameConsole console) {
+		boolean updated = false;
 		for(int i = 0; i < pieceDepot.length; i++) {
 			if(!pieceDepot[i].isSelected(mouse, console)) continue;
-			
-			pieceDepot[i].selected = true;
-			if(selectedPiece != i) {
-				pieceDepot[selectedPiece].clean(console);
-				pieceDepot[selectedPiece].selected = false;
-				selectedPiece = i;
-			}
+			updateSelected(console, selectedPiece, i);
+			updated = true;
 			break;
 		}
+		
+		return updated;
 	}
 	
-	public void keyboardCheck(String key, GameConsole console) {
-		pieceDepot[selectedPiece].Moves(key, console);
+	public void updateSelected(GameConsole console, int prevSelected, int newSelected) {
+		pieceDepot[prevSelected].clean(console);
+		pieceDepot[newSelected].showSelect(console);
+		selectedPiece = newSelected;
+	}
+	
+	public boolean keyboardCheck(String key, GameConsole console) {
+		boolean pieceUpdate = pieceDepot[selectedPiece].MovesCheck(key, console);
+		
+		int dx = key.equals("LEFT") ? -1 : key.equals("RIGHT") ? 1 : 0;
+		int dy = key.equals("UP") ? -1 : key.equals("DOWN") ? 1 : 0;
+		if (dx == 0 && dy == 0) return pieceUpdate;
+		pieceUpdate = true;
+		
+		int row = 0;
+		int col = selectedPiece;
+		int prevColLength = 4;
+		if (selectedPiece > 3) { 
+			row++;
+			col -= 4;
+			prevColLength = 4;
+		}
+		if (selectedPiece > 7) {
+			row++;
+			col -= 4;
+			prevColLength = 5;
+		}
+		if (selectedPiece > 12) {
+			row++;
+			col -= 5;
+			prevColLength = 7;
+		}
+		
+		int newRow = (row + dy + 4) % 4;
+		int newColLength;
+		switch (newRow) {
+			case 0:
+			case 1:
+				newColLength = 4;
+				break;
+			case 2:
+				newColLength = 5;
+				break;
+			case 3:
+				newColLength = 7;
+				break;
+			default:
+				newColLength = 0;
+				break;
+		}
+		
+		int newCol;
+		if (dy == 0) newCol = (col + dx + newColLength) % newColLength;
+		else newCol = (int) (col * (double) (newColLength - 1) / (prevColLength - 1));
+		int prevLength = newRow == 0 ? 0 : newRow == 1 ? 4 : newRow == 2 ? 8 : 13;		
+		int newSelected = newCol + prevLength;
+		updateSelected(console, selectedPiece, newSelected);
+		
+		return pieceUpdate;
 	}
 
 	public void render(GameConsole console, int x, int y) {
@@ -46,23 +100,33 @@ public class PieceDepot {
 		int a = 0;
 		for (int i = 0; i < pieceDepot.length; i++) {
 			Piece piece = pieceDepot[i];
+			
+			int px, py;
 			if (i < 4) {
-				piece.setPosition(x + 2 + (a * 14), y + 2);
-				piece.render(console, x + 2 + (a * 14), y + 2);
+				px = x + 2 + (a * 16);
+				py = y + 2;
 				a = (a + 1) % 4;
 			} else if (i < 8) {
-				piece.setPosition(x + 2 + (a * 14), y + 2 + 15);
-				piece.render(console, x + 2 + (a * 14), y + 2 + 15);
+				px = x + 2 + (a * 16); 
+				py = y + 2 + 15;
 				a = (a + 1) % 4;
 			} else if (i < 13) {
-				piece.setPosition(x + 2 + (a * 11), y + 2 + 30);
-				piece.render(console, x + 2 + (a * 11), y + 2 + 30);
+				px = x + 2 + (a * 12); 
+				py = y + 2 + 30;
 				a = (a + 1) % 5;
 			} else {
-				piece.setPosition(x + 2 + (a * 7), y + 2 + 40);
-				piece.render(console, x + 2 + (a * 7), y + 2 + 40);
+				px = x + 2 + (a * 8); 
+				py = y + 2 + 41;
 				a = a + 1;
 			}
+			
+			piece.setPosition(px, py);
+			piece.render(console, px, py);
+			console.print((px * 2 - 3), py, (i < 9 ? "0" : "") + (i + 1));
 		}
+	}
+	
+	public Piece getSelectedPiece() {
+		return pieceDepot[selectedPiece];
 	}
 }

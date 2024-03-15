@@ -41,4 +41,9 @@ public class FinalRobot {
 		double legBalance = Math.max(leftLeg,  rightLeg) / Math.min(leftLeg,  rightLeg);
 		speed = (int) ((leftLeg + rightLeg) / legBalance);
 	}
+	
+	public void renderStats(GameConsole console, int x, int y, int num) {
+		console.print(x * 2, y, "Computer Robot " + num + " (CR" + num + ")");
+		console.print(x * 2, y + 1, "In:" + intelligence + "  Sk:" + skill + "  SP:" + speed);
+	}
 }

@@ -18,19 +18,22 @@ public class Game {
     }
     
     public void run() throws InterruptedException {
-    	PieceDepot depot = new PieceDepot(mainRNG);
-    	depot.render(console, 50, 1);
+    	ConstructionRobot robot = new ConstructionRobot(mainRNG);
     	
-    	ConstructionRobot robot = new ConstructionRobot();
-//    	Piece randomPiece = new Piece(mainRNG, 3);
-//    	robot.putPiece(1, 0, randomPiece);
+    	FinalRobot pcRobot1 = new FinalRobot(mainRNG);
+    	FinalRobot pcRobot2 = new FinalRobot(mainRNG);
+    	
+    	pcRobot1.renderStats(console, 1, 0 + 40, 1);
+    	pcRobot2.renderStats(console, 1, 3 + 40, 2);
     	
     	robot.render(console);
+    	
+    	robot.updateSelected(console, 0, 0);
+    	robot.depot.updateSelected(console, 0, 0);
 
     	boolean isRunning = true;
     	while(isRunning) {
     		if (mouse.isLeftDown()) {
-    			depot.mouseCheck(mouse, console);
     			robot.mouseCheck(mouse, console);
     		}
     		
@@ -43,7 +46,7 @@ public class Game {
     				break;
     			}
     			
-    			depot.keyboardCheck(key, console);
+    			robot.keyboardCheck(key, console);
     		}
     		
 //    		robot.render(console);
