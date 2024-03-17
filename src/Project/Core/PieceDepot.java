@@ -129,4 +129,8 @@ public class PieceDepot {
 	public Piece getSelectedPiece() {
 		return pieceDepot[selectedPiece];
 	}
+	
+	public int getSelectedNumber() {
+		return selectedPiece + 1;
+	}
 }

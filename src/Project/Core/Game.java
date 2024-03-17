@@ -23,8 +23,8 @@ public class Game {
     	FinalRobot pcRobot1 = new FinalRobot(mainRNG);
     	FinalRobot pcRobot2 = new FinalRobot(mainRNG);
     	
-    	pcRobot1.renderStats(console, 1, 0 + 40, 1);
-    	pcRobot2.renderStats(console, 1, 3 + 40, 2);
+//    	pcRobot1.renderStats(console, 1, 0 + 40, 1);
+//    	pcRobot2.renderStats(console, 1, 3 + 40, 2);
     	
     	robot.render(console);
     	

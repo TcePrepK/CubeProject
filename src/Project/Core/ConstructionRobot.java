@@ -1,6 +1,5 @@
 package Project.Core;
 
-import java.awt.Color;
 import java.util.Random;
 
 public class ConstructionRobot {
@@ -11,6 +10,16 @@ public class ConstructionRobot {
 			{ false, true, true, true, false },
 			{ false, true, false, true, false },
 	};
+	
+	private int[][] placeToIndex = {
+			{ -1, -1, 0, -1, -1 },
+			{ 4, 5, 1, 6, 7 },
+			{ -1, 8, 2, 11, -1 },
+			{ -1, 9, 3, 12, -1 },
+			{ -1, 10, -1, 13, -1 },
+	};
+	
+	private Cube[] bodyParts = new Cube[14];
 	
 	private Stack placedPieces = new Stack(14);
 	private int[] selectedGrid = { 0, 0 };
@@ -50,6 +59,7 @@ public class ConstructionRobot {
 			for (int j = 0; j < size; j++) {
 				if (piece.cubes[j][i] == null) continue;
 				possiblePlaces[y + j][x + i] = false;
+				bodyParts[placeToIndex[y + j][x + i]] = piece.cubes[j][i].clone();
 			}
 		}
 		
@@ -79,9 +89,11 @@ public class ConstructionRobot {
 				for (int h = 0; h < size; h++) {
 					if (piece.cubes[h][w] == null) continue;
 					possiblePlaces[y + h][x + w] = true;
+					bodyParts[placeToIndex[y][x]] = null;
 				}
 			}
 		}
+		
 		for (int i = 0; i < amount - 1; i++) {
 			placedPieces.push(newStack.pop());
 		}
@@ -153,9 +165,22 @@ public class ConstructionRobot {
 			int pieceX = selectedPiece.robotX[robotNumber] * 4 + 4;
 			int pieceY = selectedPiece.robotY[robotNumber] * 4 + 4;
 			
+			Piece pieceOverRobot = null;			
+			int amount = placedPieces.size();
+			Stack newStack = new Stack(amount);
+			for (int i = 0; i < amount; i++) {
+				Piece data = (Piece) placedPieces.pop();
+				if (data.robotX == selectedPiece.robotX && data.robotY == selectedPiece.robotY) pieceOverRobot = data;
+				newStack.push(data);
+			}
+			
+			for (int i = 0; i < amount; i++) {
+				placedPieces.push(newStack.pop());
+			}
+			
 			for(int i = 0; i < size; i++) {
 				for (int j = 0; j < size; j++) {
-					if (selectedPiece.cubes[j][i] == null) continue;
+					if (pieceOverRobot.cubes[j][i] == null) continue;
 					
 					int cubeX = pieceX + i * 4;
 					int cubeY = pieceY + j * 4;
@@ -168,12 +193,12 @@ public class ConstructionRobot {
 						console.print(cubeX + 4, cubeY + h, '✖');
 					}
 					
-					if (j > 0 && selectedPiece.cubes[j - 1][i] != null) {
+					if (j > 0 && pieceOverRobot.cubes[j - 1][i] != null) {
 						for (int w = 1; w < 4; w++) {
 							console.print(cubeX + w, cubeY, ' ');
 						}
 					}
-					if (i > 0 && selectedPiece.cubes[j][i - 1] != null) {
+					if (i > 0 && pieceOverRobot.cubes[j][i - 1] != null) {
 						for (int h = 1; h < 4; h++) {
 							console.print(cubeX, cubeY + h, ' ');
 						}
@@ -276,6 +301,50 @@ public class ConstructionRobot {
 		for (int i = 0; i < size; i++) {
 			placedPieces.push(newStack.pop());
 		}
+		
+		int statY = 32;
+		console.print(4, statY, "Current Piece (#): " + depot.getSelectedNumber());
+		console.print(4, statY + 1, "Cursor Position: (X: " + (selectedGrid[0] + 1) + ", " + (selectedGrid[1] + 1) + ")");
+		console.print(4, statY + 2, "Used Pieces (=/-): ");
+		
+		for (int i = 0; i < 20; i++) {
+			int x, y;
+			if (i >= 13) {
+				x = i - 13;
+				y = 3;
+			} else if (i >= 8) {
+				x = i - 8;
+				y = 2;
+			} else if (i >= 4) {
+				x = i - 4;
+				y = 1;
+			} else {
+				x = i;
+				y = 0;
+			}
+			
+			int usedAmount = depot.pieceDepot[i].getUsedAmount();
+			String key = usedAmount == 0 ? " " : usedAmount == 1 ? "-" : "=";
+			console.print(4 + x * 5, statY + 3 + y, key + (i >= 9 ? "" : "0") + (i + 1));			
+		}
+		
+		for (int x = 15; x < 25; x++) {
+			for (int y = statY + 9; y < statY + 16; y++) {
+				console.print(x, y, " ");
+			}
+		}
+		
+		console.print(4, statY + 8, "Human Robot " + (robotNumber + 1) + "(HR" + (robotNumber + 1) + ")");
+		FinalRobot statRobot = new FinalRobot(bodyParts);
+		console.print(5, statY + 9, "> Intelligence: " + statRobot.getIn());
+		
+		console.print(5, statY + 10, "> Skill: " + statRobot.getSk());
+		console.print(6, statY + 11, "-> Left Arm: " + statRobot.getLA());
+		console.print(6, statY + 12, "-> Right Arm: " + statRobot.getRA());
+		
+		console.print(5, statY + 13, "> Speed: " + statRobot.getSp());
+		console.print(6, statY + 14, "-> Left Leg: " + statRobot.getLL());
+		console.print(6, statY + 15, "-> Right Leg: " + statRobot.getRL());
 	}
 	
 	private void clean(GameConsole console, int x, int y) {

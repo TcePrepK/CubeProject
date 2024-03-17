@@ -210,9 +210,7 @@ public class Piece {
 	}
 	
 	public void clean(GameConsole console) {
-		int usedAmount = 0;
-		if (usedOnRobot[0]) usedAmount++;
-		if (usedOnRobot[1]) usedAmount++;
+		int usedAmount = getUsedAmount();
 		
 		String key = usedAmount == 0 ? " " : usedAmount == 1 ? "-" : "=";
 		console.print((position[0] - 2) * 2, position[1] - 1, key.repeat(3));
@@ -369,6 +367,13 @@ public class Piece {
 	public void setPosition(int x, int y) {
 		position[0] = x;
 		position[1] = y;
+	}
+	
+	public int getUsedAmount() {
+		int usedAmount = 0;
+		if (usedOnRobot[0]) usedAmount++;
+		if (usedOnRobot[1]) usedAmount++;
+		return usedAmount;
 	}
 	
 	public Piece clone() {
