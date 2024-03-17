@@ -1,5 +1,6 @@
 package Project.Core;
 
+import java.awt.Color;
 import java.util.Random;
 
 public class ConstructionRobot {
@@ -11,35 +12,20 @@ public class ConstructionRobot {
 			{ false, true, false, true, false },
 	};
 	
-	private class PieceByPosition {
-		public final int x, y;
-		public final Piece piece;
-		
-		public PieceByPosition(int x, int y, Piece piece) {
-			this.x = x;
-			this.y = y;
-			this.piece = piece.clone();
-		}
-		
-		public boolean contains(int x, int y) {
-			int dx = x - this.x;
-			int dy = y - this.y;
-			int size = piece.getSize();
-			if (dx < 0 || dx >= size || dy < 0 || dy >= size) return false;
-			return piece.cubes[dy][dx] != null;
-		}
-	}
-	
 	private Stack placedPieces = new Stack(14);
 	private int[] selectedGrid = { 0, 0 };
+	private final int robotNumber;
 	
 	public PieceDepot depot;
 	
-	public ConstructionRobot(Random mainRNG) {
+	public ConstructionRobot(Random mainRNG, int robotNumber) {
 		depot = new PieceDepot(mainRNG);
+		this.robotNumber = robotNumber;
 	}
 	
 	private boolean isPlaceable(int x, int y, Piece piece) {
+		if (piece.usedOnRobot[robotNumber]) return false;
+
 		int size = piece.getSize();
 		for (int i = 0; i < size; i++) {
 			for (int j = 0; j < size; j++) {
@@ -52,10 +38,13 @@ public class ConstructionRobot {
 		return true;
 	}
 	
-	public void putPiece(int x, int y, Piece piece) {
-		if (!isPlaceable(x, y, piece)) return;
+	public boolean putPiece(int x, int y, Piece piece) {
+		if (!isPlaceable(x, y, piece)) return false;
 		
-		placedPieces.push(new PieceByPosition(x, y, piece));
+		piece.usedOnRobot[robotNumber] = true;
+		piece.robotX[robotNumber] = x;
+		piece.robotY[robotNumber] = y;
+		placedPieces.push(piece.clone());
 		int size = piece.getSize();
 		for (int i = 0; i < size; i++) {
 			for (int j = 0; j < size; j++) {
@@ -63,24 +52,32 @@ public class ConstructionRobot {
 				possiblePlaces[y + j][x + i] = false;
 			}
 		}
+		
+		return true;
 	}
 	
-	private void removePiece(PieceByPosition removed) {
+	private boolean removePiece(Piece piece) {
+		if (!piece.usedOnRobot[robotNumber]) return false;
+		int x = piece.robotX[robotNumber];
+		int y = piece.robotY[robotNumber];
+		
+		piece.usedOnRobot[robotNumber] = false;
+		piece.robotX[robotNumber] = -1;
+		piece.robotY[robotNumber] = -1;
+		
 		int amount = placedPieces.size();
 		Stack newStack = new Stack(amount);
 		for (int i = 0; i < amount; i++) {
-			PieceByPosition data = (PieceByPosition) placedPieces.pop();
-			if (data != removed) {
+			Piece data = (Piece) placedPieces.pop();
+			if (data.robotX != piece.robotX || data.robotY != piece.robotY) {
 				newStack.push(data);
 				continue;
 			}
 			
-			int x = data.x;
-			int y = data.y;
-			int size = data.piece.getSize();
+			int size = piece.getSize();
 			for (int w = 0; w < size; w++) {
 				for (int h = 0; h < size; h++) {
-					if (data.piece.cubes[h][w] == null) continue;
+					if (piece.cubes[h][w] == null) continue;
 					possiblePlaces[y + h][x + w] = true;
 				}
 			}
@@ -88,6 +85,8 @@ public class ConstructionRobot {
 		for (int i = 0; i < amount - 1; i++) {
 			placedPieces.push(newStack.pop());
 		}
+		
+		return true;
 	}
 	
 	public void mouseCheck(Mouse mouse, GameConsole console) {
@@ -110,14 +109,13 @@ public class ConstructionRobot {
 	public void keyboardCheck(String key, GameConsole console) {
 		boolean pieceUpdated = depot.keyboardCheck(key, console);
 		
+		Piece selected = depot.getSelectedPiece();
 		if (key.equals("1")) {
 			// Place Piece
-			putPiece(selectedGrid[0], selectedGrid[1], depot.getSelectedPiece());
-			pieceUpdated = true;
+			pieceUpdated = putPiece(selectedGrid[0], selectedGrid[1], selected);
 		} else if (key.equals("2")) {
-			removePiece(findSelectedPiece());
-			pieceUpdated = true;
 			// Remove Piece
+			pieceUpdated = removePiece(selected);
 		}
 		
 		int dx = key.equals("A") ? -1 : key.equals("D") ? 1 : 0;
@@ -130,25 +128,67 @@ public class ConstructionRobot {
 	}
 	
 	public void updateSelected(GameConsole console, int newX, int newY) {
-		console.getTextWindow().repaint();
 		selectedGrid[0] = newX;
 		selectedGrid[1] = newY;
 
 		clean(console, 4, 4);
 		render(console);
 		
-		PieceByPosition selectedPiece = findSelectedPiece();
-		if (possiblePlaces[newY][newX] || selectedPiece == null) {
-			// Empty, render the piece currently holding.
-			Piece piece = depot.getSelectedPiece();
+		Piece selectedPiece = depot.getSelectedPiece();
+		boolean holdingPlacedPiece = selectedPiece.usedOnRobot[robotNumber];
+		
+		// Figure out if any of blocks are outside of robot or not.
+		boolean inside = true;
+		int size = selectedPiece.getSize();
+		for (int i = 0; i < size && inside; i++) {
+			for (int j = 0; j < size && inside; j++) {
+				if (selectedPiece.cubes[j][i] == null) continue;	
+				if (newX + i < 0 || newX + i >= 5 || newY + j < 0 || newY + j >= 5) inside = false;
+			}
+		}
+		
+		if (holdingPlacedPiece) {
+			// Holding an already placed piece.
 			
-			int pieceX = newX * 4 + 4;
-			int pieceY = newY * 4 + 4;
-			int size = piece.getSize();
+			int pieceX = selectedPiece.robotX[robotNumber] * 4 + 4;
+			int pieceY = selectedPiece.robotY[robotNumber] * 4 + 4;
 			
 			for(int i = 0; i < size; i++) {
 				for (int j = 0; j < size; j++) {
-					if (piece.cubes[j][i] == null) continue;
+					if (selectedPiece.cubes[j][i] == null) continue;
+					
+					int cubeX = pieceX + i * 4;
+					int cubeY = pieceY + j * 4;
+					for (int w = 0; w < 5; w++) {
+						console.print(cubeX + w, cubeY, '✖');
+						console.print(cubeX + w, cubeY + 4, '✖');
+					}
+					for (int h = 0; h < 5; h++) {
+						console.print(cubeX, cubeY + h, '✖');
+						console.print(cubeX + 4, cubeY + h, '✖');
+					}
+					
+					if (j > 0 && selectedPiece.cubes[j - 1][i] != null) {
+						for (int w = 1; w < 4; w++) {
+							console.print(cubeX + w, cubeY, ' ');
+						}
+					}
+					if (i > 0 && selectedPiece.cubes[j][i - 1] != null) {
+						for (int h = 1; h < 4; h++) {
+							console.print(cubeX, cubeY + h, ' ');
+						}
+					}
+				}
+			}
+		} else if (inside) {
+			// Selected piece is not used yet, render the selected one.
+			
+			int pieceX = newX * 4 + 4;
+			int pieceY = newY * 4 + 4;
+			
+			for(int i = 0; i < size; i++) {
+				for (int j = 0; j < size; j++) {
+					if (selectedPiece.cubes[j][i] == null) continue;
 					
 					boolean canPlace = false;
 					if (newX + i < 5 && newY + j < 5) {
@@ -166,46 +206,18 @@ public class ConstructionRobot {
 						console.print(cubeX + 4, cubeY + h, 'O');
 					}
 					
-					if (j > 0 && piece.cubes[j - 1][i] != null) {
+					if (j > 0 && selectedPiece.cubes[j - 1][i] != null) {
 						for (int w = 1; w < 4; w++) {
 							console.print(cubeX + w, cubeY, ' ');
 						}
 					}
-					if (i > 0 && piece.cubes[j][i - 1] != null) {
+					if (i > 0 && selectedPiece.cubes[j][i - 1] != null) {
 						for (int h = 1; h < 4; h++) {
 							console.print(cubeX, cubeY + h, ' ');
 						}
 					}
 					
-					for (int w = -1; w < 2; w++) {
-						for (int h = -1; h < 2; h++) {
-							console.print(cubeX + w + 2, cubeY + h + 2, ' ');							
-						}
-					}
 					console.print(cubeX + 2, cubeY + 2, canPlace ? '✔' : '✖');
-				}
-			}
-		} else if (selectedPiece != null) {
-			// Full, render the selected piece.
-			int pieceX = selectedPiece.x * 4 + 4;
-			int pieceY = selectedPiece.y * 4 + 4;
-			Piece piece = selectedPiece.piece;
-			int size = piece.getSize();
-			
-			for(int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
-					if (piece.cubes[j][i] == null) continue;
-					
-					int cubeX = pieceX + i * 4;
-					int cubeY = pieceY + j * 4;
-					for (int w = 0; w < 5; w++) {
-						console.print(cubeX + w, cubeY, '✖');
-						console.print(cubeX + w, cubeY + 4, '✖');
-					}
-					for (int h = 0; h < 5; h++) {
-						console.print(cubeX, cubeY + h, '✖');
-						console.print(cubeX + 4, cubeY + h, '✖');
-					}
 				}
 			}
 		}
@@ -221,28 +233,8 @@ public class ConstructionRobot {
 		console.print(newX * 4 + 7, newY * 4 + 6, '|');
 	}
 	
-	private PieceByPosition findSelectedPiece() {
-		int x = selectedGrid[0];
-		int y = selectedGrid[1];
-		if (possiblePlaces[y][x]) return null;
-		
-		PieceByPosition found = null;
-		int size = placedPieces.size();
-		Stack newStack = new Stack(size);
-		for (int i = 0; i < size; i++) {
-			PieceByPosition data = (PieceByPosition) placedPieces.pop();
-			newStack.push(data);
-			if (data.contains(x, y)) found = data;
-		}
-		for (int i = 0; i < size; i++) {
-			placedPieces.push(newStack.pop());
-		}
-		
-		return found;
-	}
-	
 	public void render(GameConsole console) {
-		depot.render(console, 50, 1);
+		depot.render(console, 40, 1);
 		
 		console.print(4, 2, "+ " + "-".repeat(46) + ">  X");
 		for (int i = 1; i < 25; i++) {
@@ -277,9 +269,9 @@ public class ConstructionRobot {
 		int size = placedPieces.size();
 		Stack newStack = new Stack(size);
 		for (int i = 0; i < size; i++) {
-			PieceByPosition data = (PieceByPosition) placedPieces.pop();
+			Piece data = (Piece) placedPieces.pop();
 			newStack.push(data);
-			data.piece.renderRaw(console, data.x * 4 + 4, data.y * 4 + 4);
+			data.renderRaw(console, data.robotX[robotNumber] * 4 + 4, data.robotY[robotNumber] * 4 + 4);
 		}
 		for (int i = 0; i < size; i++) {
 			placedPieces.push(newStack.pop());

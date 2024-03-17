@@ -28,11 +28,6 @@ public class Stack {
         stack[currentSize] = null;
         return data;
     }
-    
-    public Object get(int index) {
-    	if (index < 0 || index >= currentSize) return null;
-        return stack[index];
-    }
 
     public boolean isFull() {
         return currentSize == maxSize;

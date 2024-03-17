@@ -18,7 +18,7 @@ public class Game {
     }
     
     public void run() throws InterruptedException {
-    	ConstructionRobot robot = new ConstructionRobot(mainRNG);
+    	ConstructionRobot robot = new ConstructionRobot(mainRNG, 0);
     	
     	FinalRobot pcRobot1 = new FinalRobot(mainRNG);
     	FinalRobot pcRobot2 = new FinalRobot(mainRNG);

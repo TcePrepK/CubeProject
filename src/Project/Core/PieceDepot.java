@@ -94,8 +94,8 @@ public class PieceDepot {
 	}
 
 	public void render(GameConsole console, int x, int y) {
-		String lines = "-".repeat(47);
-		console.print(x * 2 + 4, y, lines + "   P I E C E S  " + lines);
+		String lines = "-".repeat(56);
+		console.print(x * 2, y, lines + "   P I E C E S  " + lines);
 
 		int a = 0;
 		for (int i = 0; i < pieceDepot.length; i++) {

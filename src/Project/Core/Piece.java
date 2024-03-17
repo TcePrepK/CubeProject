@@ -65,6 +65,10 @@ public class Piece {
 	
 	private int[] position = { 0, 0 };
 	
+	public boolean[] usedOnRobot = { false, false };
+	public int[] robotX = { -1, -1 };
+	public int[] robotY = { -1, -1 };
+	
 	public Piece(Random rng, int cubeAmount) {
 		this.cubeAmount = cubeAmount;
 		createRandomBlocks(rng);
@@ -206,9 +210,14 @@ public class Piece {
 	}
 	
 	public void clean(GameConsole console) {
-		console.print((position[0] - 2) * 2, position[1] - 1, "   ");
-		console.print((position[0] - 2) * 2, position[1], " ");
-		console.print((position[0] - 2) * 2, position[1] + 1, "   ");
+		int usedAmount = 0;
+		if (usedOnRobot[0]) usedAmount++;
+		if (usedOnRobot[1]) usedAmount++;
+		
+		String key = usedAmount == 0 ? " " : usedAmount == 1 ? "-" : "=";
+		console.print((position[0] - 2) * 2, position[1] - 1, key.repeat(3));
+		console.print((position[0] - 2) * 2, position[1], key);
+		console.print((position[0] - 2) * 2, position[1] + 1, key.repeat(3));
 	}
 	
 	public void showSelect(GameConsole console) {
@@ -371,6 +380,12 @@ public class Piece {
 				newCubes[j][i] = cubes[j][i].clone();
 			}
 		}
-		return new Piece(newCubes, cubeAmount);
+		
+		Piece piece = new Piece(newCubes, cubeAmount);
+		piece.robotX = robotX;
+		piece.robotY = robotY;
+		piece.usedOnRobot = usedOnRobot;
+		
+		return piece;
 	}
 }
