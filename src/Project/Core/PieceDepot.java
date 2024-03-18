@@ -25,7 +25,7 @@ public class PieceDepot {
 		for(int i = 0; i < pieceDepot.length; i++) {
 			if(!pieceDepot[i].isSelected(mouse, console)) continue;
 			updateSelected(console, selectedPiece, i);
-			updated = true;
+			updated = selectedPiece != i;
 			break;
 		}
 		
@@ -38,8 +38,8 @@ public class PieceDepot {
 		selectedPiece = newSelected;
 	}
 	
-	public boolean keyboardCheck(String key, GameConsole console) {
-		boolean pieceUpdate = pieceDepot[selectedPiece].MovesCheck(key, console);
+	public boolean keyboardCheck(String key, GameConsole console, int robotNumber) {
+		boolean pieceUpdate = pieceDepot[selectedPiece].MovesCheck(key, console, robotNumber);
 		
 		int dx = key.equals("LEFT") ? -1 : key.equals("RIGHT") ? 1 : 0;
 		int dy = key.equals("UP") ? -1 : key.equals("DOWN") ? 1 : 0;

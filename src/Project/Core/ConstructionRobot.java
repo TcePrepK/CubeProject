@@ -1,5 +1,6 @@
 package Project.Core;
 
+import java.awt.Color;
 import java.util.Random;
 
 public class ConstructionRobot {
@@ -20,6 +21,7 @@ public class ConstructionRobot {
 	};
 	
 	private Cube[] bodyParts = new Cube[14];
+	private boolean full = false;
 	
 	private Stack placedPieces = new Stack(14);
 	private int[] selectedGrid = { 0, 0 };
@@ -27,8 +29,8 @@ public class ConstructionRobot {
 	
 	public PieceDepot depot;
 	
-	public ConstructionRobot(Random mainRNG, int robotNumber) {
-		depot = new PieceDepot(mainRNG);
+	public ConstructionRobot(Random mainRNG, PieceDepot depot, int robotNumber) {
+		this.depot = depot;
 		this.robotNumber = robotNumber;
 	}
 	
@@ -101,6 +103,21 @@ public class ConstructionRobot {
 		return true;
 	}
 	
+	private void checkForFull(GameConsole console) {
+		full = true;
+		for (int i = 0; i < 14; i++) if (bodyParts[i] == null) {
+			full = false;
+		};
+		
+		if (isFull()) {
+			console.setColor(new Color(255, 100, 100));
+			console.print(11, 28, "Robot is full! Press (X) to continue.");
+			console.resetColor();
+		} else {
+			console.print(11, 28, " ".repeat(38));
+		}
+	}
+	
 	public void mouseCheck(Mouse mouse, GameConsole console) {
 		boolean updated = depot.mouseCheck(mouse, console);
 		
@@ -119,7 +136,7 @@ public class ConstructionRobot {
 	}
 	
 	public void keyboardCheck(String key, GameConsole console) {
-		boolean pieceUpdated = depot.keyboardCheck(key, console);
+		boolean pieceUpdated = depot.keyboardCheck(key, console, robotNumber);
 		
 		Piece selected = depot.getSelectedPiece();
 		if (key.equals("1")) {
@@ -145,6 +162,7 @@ public class ConstructionRobot {
 
 		clean(console, 4, 4);
 		render(console);
+		checkForFull(console);
 		
 		Piece selectedPiece = depot.getSelectedPiece();
 		boolean holdingPlacedPiece = selectedPiece.usedOnRobot[robotNumber];
@@ -211,6 +229,8 @@ public class ConstructionRobot {
 			int pieceX = newX * 4 + 4;
 			int pieceY = newY * 4 + 4;
 			
+			Color border = new Color(200, 200, 200);
+			console.setColor(border);
 			for(int i = 0; i < size; i++) {
 				for (int j = 0; j < size; j++) {
 					if (selectedPiece.cubes[j][i] == null) continue;
@@ -242,9 +262,17 @@ public class ConstructionRobot {
 						}
 					}
 					
-					console.print(cubeX + 2, cubeY + 2, canPlace ? '✔' : '✖');
+					if (canPlace) {
+						console.setColor(new Color(0, 255, 0));
+						console.print(cubeX + 2, cubeY + 2, '✔');						
+					} else {
+						console.setColor(new Color(255, 0, 0));
+						console.print(cubeX + 2, cubeY + 2, '✖');												
+					}
+					console.setColor(border);
 				}
 			}
+			console.resetColor();
 		}
 		
 		console.print(newX * 4 + 5, newY * 4 + 7, '\\');
@@ -259,7 +287,7 @@ public class ConstructionRobot {
 	}
 	
 	public void render(GameConsole console) {
-		depot.render(console, 40, 1);
+		depot.render(console, 35, 1);
 		
 		console.print(4, 2, "+ " + "-".repeat(46) + ">  X");
 		for (int i = 1; i < 25; i++) {
@@ -307,6 +335,7 @@ public class ConstructionRobot {
 		console.print(4, statY + 1, "Cursor Position: (X: " + (selectedGrid[0] + 1) + ", " + (selectedGrid[1] + 1) + ")");
 		console.print(4, statY + 2, "Used Pieces (=/-): ");
 		
+		console.setColor(new Color(150, 150, 150), null);
 		for (int i = 0; i < 20; i++) {
 			int x, y;
 			if (i >= 13) {
@@ -325,8 +354,9 @@ public class ConstructionRobot {
 			
 			int usedAmount = depot.pieceDepot[i].getUsedAmount();
 			String key = usedAmount == 0 ? " " : usedAmount == 1 ? "-" : "=";
-			console.print(4 + x * 5, statY + 3 + y, key + (i >= 9 ? "" : "0") + (i + 1));			
+			console.print(4 + x * 5, statY + 3 + y, key + (i >= 9 ? "" : "0") + (i + 1));
 		}
+		console.resetColor();
 		
 		for (int x = 15; x < 25; x++) {
 			for (int y = statY + 9; y < statY + 16; y++) {
@@ -335,16 +365,30 @@ public class ConstructionRobot {
 		}
 		
 		console.print(4, statY + 8, "Human Robot " + (robotNumber + 1) + "(HR" + (robotNumber + 1) + ")");
-		FinalRobot statRobot = new FinalRobot(bodyParts);
+		FinalRobot statRobot = finishTheRobot();
+		
+		console.setColor(new Color(100, 100, 255));
 		console.print(5, statY + 9, "> Intelligence: " + statRobot.getIn());
 		
+		console.setColor(new Color(255, 100, 100));
 		console.print(5, statY + 10, "> Skill: " + statRobot.getSk());
 		console.print(6, statY + 11, "-> Left Arm: " + statRobot.getLA());
 		console.print(6, statY + 12, "-> Right Arm: " + statRobot.getRA());
 		
+		console.setColor(new Color(150, 255, 150));
 		console.print(5, statY + 13, "> Speed: " + statRobot.getSp());
 		console.print(6, statY + 14, "-> Left Leg: " + statRobot.getLL());
 		console.print(6, statY + 15, "-> Right Leg: " + statRobot.getRL());
+		console.resetColor();
+	}
+	
+	public boolean isFull() {
+//		return full;
+		return true;
+	}
+	
+	public FinalRobot finishTheRobot() {
+		return new FinalRobot(bodyParts, robotNumber);
 	}
 	
 	private void clean(GameConsole console, int x, int y) {

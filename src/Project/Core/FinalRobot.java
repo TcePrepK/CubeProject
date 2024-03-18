@@ -1,13 +1,19 @@
 package Project.Core;
 
+import java.awt.Color;
 import java.util.Random;
 
 public class FinalRobot {
 	private int intelligence, skill, speed;
 	private int leftArm, rightArm; 
-	private int leftLeg, rightLeg; 
+	private int leftLeg, rightLeg;
 	
-	public FinalRobot(Random rng) {
+	private int index = 0;
+	boolean human = false;
+	
+	public FinalRobot(Random rng, int index) {
+		this.index = index;
+		
 		Cube[] bodyParts = new Cube[14];
 		
 		// Construct all 14 randomly so we get a random robot.
@@ -15,11 +21,14 @@ public class FinalRobot {
 			bodyParts[i] = new Cube(rng, 30, 99);
 		}
 		
-		constructRobot(bodyParts);
+		constructRobot(bodyParts);		
 	}
 	
-	public FinalRobot(Cube[] bodyParts) {
-		constructRobot(bodyParts);
+	public FinalRobot(Cube[] bodyParts, int index) {
+		this.index = index;
+		human = true;
+		
+		constructRobot(bodyParts);		
 	}
 	
 	// Calculates the robot's statistics when body parts are given.
@@ -61,9 +70,20 @@ public class FinalRobot {
 		return fixed;
 	}
 	
-	public void renderStats(GameConsole console, int x, int y, int num) {
-		console.print(x * 2, y, "Computer Robot " + num + " (CR" + num + ")");
-		console.print(x * 2, y + 1, "In:" + intelligence + "  Sk:" + skill + "  SP:" + speed);
+	public void renderStats(GameConsole console, int y) {
+		String name = human ? "Human" : "Computer";
+		console.print(4, y, name + " Robot " + (index + 1) + " (" + (human ? "H" : "C") + "R" + (index + 1) + ")");
+	
+		console.setColor(new Color(100, 100, 255));
+		console.print(4, y + 1, "In:" + intelligence);
+		
+		console.setColor(new Color(255, 100, 100));
+		console.print(12, y + 1, "Sk:" + skill);
+		
+		console.setColor(new Color(150, 255, 150));
+		console.print(20, y + 1, "SP:" + speed);
+		
+		console.resetColor();
 	}
 
 	public int getIn() {

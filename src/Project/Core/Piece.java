@@ -1,5 +1,6 @@
 package Project.Core;
 
+import java.awt.Color;
 import java.util.Random;
 
 public class Piece {
@@ -192,7 +193,9 @@ public class Piece {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////// Select
 
-	public boolean MovesCheck(String keyboard,GameConsole console) {
+	public boolean MovesCheck(String keyboard,GameConsole console, int robotNumber) {
+		if (usedOnRobot[robotNumber]) return false;
+		
 		if(keyboard.equals("3")) {
 			rotateCCW();
 			render(console, position[0], position[1]);
@@ -219,9 +222,11 @@ public class Piece {
 	}
 	
 	public void showSelect(GameConsole console) {
+		console.setColor(new Color(255, 255, 150), null);
 		console.print((position[0] - 2) * 2, position[1] - 1, "###");
 		console.print((position[0] - 2) * 2, position[1], "#");
 		console.print((position[0] - 2) * 2, position[1] + 1, "###");
+		console.resetColor();
 	}
 	
 	public boolean isSelected(Mouse mouse,GameConsole console) {

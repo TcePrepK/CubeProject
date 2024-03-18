@@ -57,6 +57,16 @@ public class GameConsole {
 		getTextWindow().output(s, textAttributes);
 	}
 	
+	public void cleanScreen() {
+		for (int i = 0; i < MAX_CHARS_Y; i++) {
+			print(1, i, " ".repeat(MAX_CHARS_X - 2));			
+		}
+	}
+	
+	public void setColor(Color foreground) {
+		setColor(foreground, null);
+	}
+	
 	public void setColor(Color foreground, Color background) {
 		if (foreground == null) foreground = Color.WHITE;
 		if (background == null) background = Color.BLACK;

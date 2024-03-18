@@ -3,8 +3,6 @@ package Project.Core;
 import java.util.Random;
 
 public class Game {
-	private String currentState = "startMenu";
-	
 	private Random mainRNG = new Random();
 	
 	private GameConsole console;
@@ -18,38 +16,59 @@ public class Game {
     }
     
     public void run() throws InterruptedException {
-    	ConstructionRobot robot = new ConstructionRobot(mainRNG, 0);
+    	PieceDepot mainDepot = new PieceDepot(mainRNG);
     	
-    	FinalRobot pcRobot1 = new FinalRobot(mainRNG);
-    	FinalRobot pcRobot2 = new FinalRobot(mainRNG);
-    	
-//    	pcRobot1.renderStats(console, 1, 0 + 40, 1);
-//    	pcRobot2.renderStats(console, 1, 3 + 40, 2);
-    	
-    	robot.render(console);
-    	
-    	robot.updateSelected(console, 0, 0);
-    	robot.depot.updateSelected(console, 0, 0);
+    	FinalRobot[] humanRobots = new FinalRobot[2];
+    	FinalRobot[] computerRobots = new FinalRobot[2];
 
+      	int totalHumanRobots = 0;    	
+    	ConstructionRobot currentRobot = new ConstructionRobot(mainRNG, mainDepot, totalHumanRobots);
+    	currentRobot.render(console);
+    	currentRobot.updateSelected(console, 0, 0);
+    	currentRobot.depot.updateSelected(console, 0, 0);
+
+    	boolean isInGames = false;
     	boolean isRunning = true;
     	while(isRunning) {
-    		if (mouse.isLeftDown()) {
-    			robot.mouseCheck(mouse, console);
-    		}
-    		
-    		if (keyboard.isKeyPressed()) {
-    			String key = keyboard.readKey();
-    			
-    			// If escape is pressed, close the game.
-    			if (key.equals("ESCAPE")) {
-    				isRunning = false;
-    				break;
+    		if (!isInGames) {
+    			if (mouse.isLeftDown()) {
+    				currentRobot.mouseCheck(mouse, console);
     			}
     			
-    			robot.keyboardCheck(key, console);
+    			if (keyboard.isKeyPressed()) {
+    				String key = keyboard.readKey();
+    				
+    				// If escape is pressed, close the game.
+    				if (key.equals("ESCAPE")) {
+    					isRunning = false;
+    					break;
+    				}
+    				
+    				if (key.equals("X") && currentRobot.isFull()) {
+    					humanRobots[totalHumanRobots] = currentRobot.finishTheRobot();
+    					computerRobots[totalHumanRobots] = new FinalRobot(mainRNG, totalHumanRobots);
+    					totalHumanRobots++;
+    					
+    					if (totalHumanRobots < 2) {
+    						currentRobot = new ConstructionRobot(mainRNG, mainDepot, totalHumanRobots);
+    						currentRobot.render(console);
+    						currentRobot.updateSelected(console, 0, 0);
+    						
+    						humanRobots[0].renderStats(console, 49);
+        			    	computerRobots[0].renderStats(console, 52);
+    					} else {
+    						isInGames = true;
+//    						console.cleanScreen();
+    						continue;
+    					}
+    					
+    				}
+    				
+    				currentRobot.keyboardCheck(key, console);
+    			}
+    		} else {
+    			// Render the games.
     		}
-    		
-//    		robot.render(console);
     		
     		Thread.sleep(1);
  	    }
