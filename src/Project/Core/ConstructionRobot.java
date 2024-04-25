@@ -91,7 +91,7 @@ public class ConstructionRobot {
 				for (int h = 0; h < size; h++) {
 					if (piece.cubes[h][w] == null) continue;
 					possiblePlaces[y + h][x + w] = true;
-					bodyParts[placeToIndex[y][x]] = null;
+					bodyParts[placeToIndex[y + h][x + w]] = null;
 				}
 			}
 		}
